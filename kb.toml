@@ -1,0 +1,23 @@
+schema_version = "1.0"
+name = "personal-knowledge-base"
+language = "zh-CN"
+
+[paths]
+inbox = "00-inbox"
+archive = "99-archive"
+templates = "templates"
+index = "INDEX.md"
+
+[documents]
+extensions = [".md"]
+require_frontmatter = true
+exclude = ["00-inbox", "99-archive", "templates"]
+
+[index]
+include_archive = false
+sort = "path"
+
+[check]
+validate_links = true
+validate_unique_ids = true
+scan_secrets = true
