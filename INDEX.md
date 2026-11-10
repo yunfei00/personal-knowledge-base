@@ -12,4 +12,8 @@
 | [AI Skills](06-AI-Skills/) | Agents、Skills、Prompts、Workflows |
 | [想法与学习](07-想法与学习/) | 学习与实验 |
 
-暂无正式知识文档。
+## 已收录技术文档
+
+- [AI与大模型 / Ollama 安装部署与使用指南](01-技术知识/AI与大模型/Ollama/Ollama-安装部署与使用指南.md)
+
+> AI 领域统一使用「AI与大模型」分类；其他主题随新增文档持续更新索引。
