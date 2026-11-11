@@ -1,0 +1,140 @@
+name: 更新知识复习导航
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '01-技术知识/**/*.md'
+      - '02-问题解决/**/*.md'
+      - '03-代码片段/**/*.md'
+      - '04-项目档案/**/*.md'
+      - '05-标准流程/**/*.md'
+      - '06-AI-Skills/**/*.md'
+      - '07-想法与学习/**/*.md'
+      - '.github/workflows/update-recent.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: recent-navigation-main
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出 main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: 从文章元数据生成 RECENT.md
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from datetime import date
+          from pathlib import Path
+          import re
+
+          roots = [
+              "01-技术知识", "02-问题解决", "03-代码片段",
+              "04-项目档案", "05-标准流程", "06-AI-Skills", "07-想法与学习"
+          ]
+          fields = ("title", "updated", "created", "status")
+          records = []
+          errors = []
+
+          def frontmatter(path):
+              content = path.read_text(encoding="utf-8-sig")
+              if not content.startswith("---\n"):
+                  raise ValueError("缺少 YAML frontmatter")
+              end = content.find("\n---\n", 4)
+              if end < 0:
+                  raise ValueError("frontmatter 未闭合")
+              result = {}
+              for line in content[4:end].splitlines():
+                  m = re.match(r"^([a-z_]+):\s*(.*?)\s*$", line)
+                  if m:
+                      key, value = m.groups()
+                      if key in fields:
+                          result[key] = value.strip().strip('"').strip("'")
+              for key in fields:
+                  if not result.get(key):
+                      raise ValueError(f"缺少 {key}")
+              for key in ("updated", "created"):
+                  raw = result[key]
+                  if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", raw):
+                      raise ValueError(f"{key} 日期格式错误: {raw}")
+                  date.fromisoformat(raw)
+              return result
+
+          for root in roots:
+              folder = Path(root)
+              if not folder.is_dir():
+                  continue
+              for path in sorted(folder.rglob("*.md")):
+                  if path.name.startswith("."):
+                      continue
+                  try:
+                      meta = frontmatter(path)
+                      records.append((meta["updated"], meta["title"], path.as_posix(),
+                                      path.parts[1] if root == "01-技术知识" and len(path.parts) > 2
+                                      else root.split("-", 1)[-1],
+                                      meta["created"], meta["status"]))
+                  except (ValueError, OSError) as exc:
+                      errors.append(f"{path}: {exc}")
+
+          if errors:
+              raise SystemExit("文章元数据校验失败，拒绝生成不完整索引:\n" + "\n".join(errors))
+
+          records.sort(key=lambda row: (-date.fromisoformat(row[0]).toordinal(), row[1].casefold(), row[2]))
+          lines = [
+              "# 最近更新 · 知识复习导航",
+              "",
+              "> 本页由 GitHub Actions 根据知识文章 YAML 的 `updated` 字段自动生成，请勿手动编辑。日期精度为天；同日按标题排序。此处不是 Git 提交时间。",
+              "",
+              f"**当前收录：{len(records)} 篇知识文章。**",
+              "",
+              "- [返回知识库首页](README.md)",
+              "- [按主题分类查找](INDEX.md)",
+              "- [查看 GitHub 提交历史](https://github.com/yunfei00/personal-knowledge-base/commits/main/)",
+              "",
+              "## 全部文章 · 按最近更新排序",
+              "",
+              "| 最后更新 | 文章（点击打开） | 分类 | 创建日期 | 状态 |",
+              "| --- | --- | --- | --- | --- |",
+          ]
+          for updated, title, path, category, created, status in records:
+              safe_title = title.replace("|", "\\|").replace("[", "\\[").replace("]", "\\]")
+              link = path.replace(" ", "%20").replace("(", "%28").replace(")", "%29")
+              lines.append(f"| {updated} | [{safe_title}]({link}) | {category} | {created} | {status} |")
+          lines += [
+              "",
+              "## 如何使用",
+              "",
+              "1. 从表格顶部开始复习最近维护的文章；点击标题直接进入正文。",
+              "2. 按主题查找请使用 [INDEX.md](INDEX.md)。",
+              "3. 查看某篇文章的逐次修改记录，请打开该文章在 GitHub 上的 History。",
+              "4. 新增或实质更新知识时维护文章 frontmatter 的 `updated`；工作流会在 main 分支推送后更新本页。",
+              "",
+              "> 工作流在文章元数据缺失或日期无效时会失败，避免静默遗漏文章；不包含 Inbox、归档区、模板及仓库说明文件。",
+              "",
+          ]
+          Path("RECENT.md").write_text("\n".join(lines), encoding="utf-8")
+          print(f"已生成 RECENT.md，共 {len(records)} 篇")
+          PY
+      - name: 提交导航更新（有变化才提交）
+        shell: bash
+        run: |
+          if git diff --quiet -- RECENT.md; then
+            echo "RECENT.md 没有变化"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add RECENT.md
+          git commit -m "docs: 自动更新最近知识导航 [skip ci]"
+          git push origin HEAD:main
