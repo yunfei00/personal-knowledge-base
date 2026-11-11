@@ -16,6 +16,8 @@
 
 ## 技术知识
 
+- [Python / pytest 自动化测试：原理、用法与 CST 项目实例](01-技术知识/Python/pytest-自动化测试原理与使用.md)
+
 - [AI与大模型 / Ollama / Ollama 安装部署与使用指南](01-技术知识/AI与大模型/Ollama/Ollama-安装部署与使用指南.md)
 - [CAD与三维设计 / Creo / Creo Parametric 入门](01-技术知识/CAD与三维设计/Creo/Creo-Parametric.md)
 - [Office办公自动化 / Excel / Excel 文件格式与 VBA 宏速查](01-技术知识/Office办公自动化/Excel/Excel文件格式与VBA宏.md)
