@@ -146,6 +146,33 @@ Component（组织多个实体）
 
 遇到实际问题后，再把**现象、原因、验证方法和结论**补进对应章节；较长的故障处理过程另存到 `02-问题解决/`，并在本文建立链接。
 
+## 10. 软件安装与维护：CST 2025 SUP 补丁安装（已验证）
+
+**记录日期：** 2026-11-11  
+**环境：** CST Studio Suite 2025 / Windows  
+**补丁格式：** `.sup`（Service Pack）  
+**实际结果：** SUP 文件导入成功，补丁安装成功。具体补丁编号及更新后的版本号尚未记录。
+
+### 安装步骤
+
+1. 保存工程并关闭 CST Studio Suite 2025。
+2. 在 Windows 开始菜单中打开对应版本的 **CST Update Manager**。
+3. 点击 **Import**，选择本地 `.sup` 补丁文件。
+4. 等待导入完成，在更新列表中选择该补丁。
+5. 点击 **Install**，等待安装结束。
+6. 重新打开 CST，建议通过 **Help / About** 核对版本，并验证常用功能。
+
+### 注意事项
+
+- 确认 SUP 补丁与 CST 2025 主版本兼容。
+- 不要直接把 SUP 文件复制到安装目录。
+- 如遇权限不足，可尝试以管理员身份运行更新管理器。
+- 本次仅确认“导入成功、安装成功”；软件功能回归、补丁编号及版本号未核实，不标记为已验证。
+
+**快速记忆：** `CST Update Manager → Import → 选择 .sup → Install`
+
+**检索关键词：** CST、2025、SUP、Service Pack、补丁、Update Manager。
+
 ## 参考资料
 
 - [SIMULIA CST Studio Suite 产品介绍](https://www.3ds.com/products/simulia/cst-studio-suite)
