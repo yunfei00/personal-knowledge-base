@@ -44,7 +44,7 @@
 ## 时间导航维护
 
 - 知识库首页 `README.md` 提供 [最近更新](RECENT.md) 与分类索引入口；`INDEX.md` 保留分类导航。
-- 新增或实质更新知识文章时，同步维护文章 frontmatter 的 `updated`（`YYYY-MM-DD`）以及 `RECENT.md`，保证导航收录全部正式知识文章，按 `updated` 倒序排列。
+- 新增或实质更新知识文章时，维护文章 frontmatter 的 `updated`（`YYYY-MM-DD`）；推送到 `main` 后由 `.github/workflows/update-recent.yml` 自动生成 `RECENT.md`，无需手动维护该文件。
 - `RECENT.md` 的日期代表文章元数据中的知识维护日期，**不是 GitHub 最后提交时间**；同一天按标题排序，不伪造更精细的时间。
 - 不因修改 README、INDEX、RECENT 或单纯格式整理而虚构知识正文更新日期；如需逐次修改历史，引导使用 GitHub History。
-- 在自动生成工具落地前，`RECENT.md` 为人工维护的静态页面；不得声称会自动刷新。
+- `RECENT.md` 为自动生成文件，请勿手动编辑；若未刷新，检查 GitHub Actions 工作流结果及仓库 Actions 写入权限。工作流在元数据缺失或日期格式错误时会失败。
