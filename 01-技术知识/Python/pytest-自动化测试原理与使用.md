@@ -1,5 +1,5 @@
 ---
-id: "python-pytest-fundamentals"
+id: tech-python-pytest-001
 title: "pytest 自动化测试：原理、用法与 CST 项目实例"
 category: technical
 tags: [Python, pytest, 自动化测试, 单元测试, uv, CI]
