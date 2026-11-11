@@ -73,7 +73,116 @@ PARAMETER num_ctx 8192
 
 保存为 `Modelfile`，然后运行 `ollama create gpt-oss-custom -f Modelfile`。较大的上下文通常增加显存占用。
 
-## 4. GPU 检查与性能
+## 4. 模型加载、显存驻留与耗电
+
+### 4.1 下载、加载和推理不是同一件事
+
+| 阶段 | 发生什么 | GPU 显存状态 |
+| --- | --- | --- |
+| `ollama pull` | 下载模型文件到硬盘 | 通常不会因此把模型权重常驻显存 |
+| 首次 `ollama run` 或 API 请求 | 服务端按需加载模型到 GPU 显存和/或系统内存 | 显存占用增加；首次调用有加载延迟 |
+| 模型推理 | GPU/CPU 执行计算并生成回答 | 计算利用率、功耗通常上升 |
+| 请求结束后空闲 | 模型可继续驻留，等待后续请求复用 | 可能仍占用显存，但不等于 GPU 满负载 |
+| 驻留期满或手动停止 | 卸载模型，释放相关资源 | 硬盘模型文件不会因此删除 |
+
+本机调用和局域网调用遵循同一加载机制：客户端通过 HTTP 请求 Ollama 服务端，模型实际运行在**服务端** GPU 上。多个客户端调用同一服务端，不需要各自在本机下载模型。若模型已经加载且未被卸载，后续请求通常可以省去加载时间；但高并发仍受显存、上下文和服务端调度限制。
+
+### 4.2 驻留时间在哪里设置？
+
+**全局默认值：** 环境变量 `OLLAMA_KEEP_ALIVE`。常见默认驻留时间是空闲约 5 分钟（以实际版本及配置为准）。
+
+| 值 | 含义 |
+| --- | --- |
+| `0` | 请求完成后尽快卸载 |
+| `5m` | 空闲保留约 5 分钟 |
+| `30m` | 空闲保留约 30 分钟 |
+| `1h` | 空闲保留约 1 小时 |
+| `-1` | 持续驻留，直至主动卸载、服务退出或资源调度要求卸载 |
+
+Windows 桌面版示例（用户级环境变量）：
+
+```powershell
+# 为后续启动的 Ollama 进程设置默认驻留 30 分钟
+[Environment]::SetEnvironmentVariable("OLLAMA_KEEP_ALIVE", "30m", "User")
+
+# 查看保存的用户级设置
+[Environment]::GetEnvironmentVariable("OLLAMA_KEEP_ALIVE", "User")
+
+# 查看当前已加载模型及预计卸载时间
+ollama ps
+```
+
+**设置后要完全退出并重新启动 Ollama**，让新进程读取环境变量。若作为 Windows 服务或 Linux systemd 服务运行，应在对应服务环境配置并重启服务，而不是只修改当前用户的变量。
+
+**单次 API 请求覆盖默认值：**
+
+```json
+{
+  "model": "gpt-oss:20b",
+  "prompt": "你好",
+  "stream": false,
+  "keep_alive": "30m"
+}
+```
+
+`POST /api/generate` 或 `POST /api/chat` 可传入 `keep_alive`；请求级设置优先于全局默认值。可以用不带 `prompt` 的 `/api/generate` 请求预加载模型，并设置驻留时间。通过 `ollama ps` 查看 `UNTIL` 列确认预计卸载时间。驻留并非显存锁定保证：服务退出或资源调度仍可能导致模型卸载。
+
+### 4.3 常驻模型有什么代价？
+
+| 对比 | 长时间驻留 | 按需加载 |
+| --- | --- | --- |
+| 首次响应 | 通常更快 | 需要等待模型加载 |
+| 空闲显存 | 持续占用 | 卸载后释放 |
+| 空闲 GPU 功耗 | 可能更高，需实测 | 通常更低 |
+| 推理性能 | 相同条件下不会因驻留而自动更快 | 加载完成后通常相近 |
+| 运行其他模型 / CUDA 任务 | 可能出现显存竞争 | 显存更灵活 |
+
+**显存占用高不等于 GPU 利用率高，更不等于持续满功率耗电。** 常驻可能增加 GPU 待机功耗、温度及风扇负担，但幅度受硬件、驱动、电源状态影响；不能直接把模型大小换算为电费。模型文件保存在硬盘，与是否常驻无关。
+
+计算额外电费的示例公式：
+
+```text
+每月额外耗电（kWh）= 额外空闲功耗（W）× 每天驻留小时数 × 30 ÷ 1000
+每月额外电费 = 每月额外耗电（kWh）× 每度电价
+```
+
+例如**假设**额外空闲功耗 20W、每天 24 小时、30 天、电价 0.6 元/kWh，则额外耗电 14.4 kWh、电费约 8.64 元；这不是 Tesla V100 的实测数据。
+
+### 4.4 如何验证驻留与实际功耗？
+
+在 **Ollama 服务端** 的 Windows PowerShell 中操作，替换成真实存在的模型名称：
+
+```powershell
+$model = "gpt-oss:20b"
+
+# 卸载后测量空闲基线
+ollama stop $model
+Start-Sleep -Seconds 30
+nvidia-smi --query-gpu=name,power.draw,memory.used,utilization.gpu,temperature.gpu --format=csv
+
+# 通过本机 API 预加载并设置长时间驻留（无 prompt）
+$body = @{ model = $model; keep_alive = -1 } | ConvertTo-Json
+Invoke-RestMethod -Uri "http://127.0.0.1:11434/api/generate" -Method Post -ContentType "application/json" -Body $body
+
+# 等待推理活动结束后再观察
+Start-Sleep -Seconds 30
+ollama ps
+nvidia-smi --query-gpu=name,power.draw,memory.used,utilization.gpu,temperature.gpu --format=csv
+
+# 测试结束后释放显存
+ollama stop $model
+```
+
+建议两种状态各连续测几分钟、取平均值，并确保没有其他 GPU 任务干扰。`nvidia-smi` 主要反映 GPU 板卡功耗，不是整机墙上插座功耗；要估算整机电费，使用插座功率计更准确。
+
+### 4.5 实用建议
+
+- **偶尔调用、多模型切换：** 保持默认 5 分钟或使用 30 分钟驻留。
+- **Local Coding Agent 连续开发：** 可先试 30 分钟，减少反复加载。
+- **专用局域网推理服务器：** 高频使用同一模型时可以考虑 `-1`，但要监控显存与空闲功耗。
+- **Tesla V100 32GB：** 优先实测 `ollama ps` 的加载情况、`nvidia-smi` 的显存和功耗；不要仅凭模型文件大小判断是否能与其他模型同时驻留。
+
+## 5. GPU 检查与性能
 
 ```powershell
 nvidia-smi
@@ -90,7 +199,7 @@ tokens/s = eval_count * 1_000_000_000 / eval_duration
 
 对编程 Agent，工具调用成功率和任务完成率比单独的 tokens/s 更重要。
 
-## 5. Windows 模型存储目录迁移
+## 6. Windows 模型存储目录迁移
 
 默认位置通常为 `%USERPROFILE%\.ollama\models`。可设置：
 
@@ -100,7 +209,7 @@ tokens/s = eval_count * 1_000_000_000 / eval_duration
 
 迁移前退出 Ollama，完整备份原目录并复制数据；重启 Ollama 后确认模型可列出、可运行，再考虑删除旧目录。不要直接删除不确定是否被其他模型引用的 blobs。不同版本目录结构可能变化。
 
-## 6. 局域网服务
+## 7. 局域网服务
 
 默认 API 地址通常为 `http://127.0.0.1:11434`。Windows 设置中可开启 **Expose Ollama to the network**，也可设置：
 
@@ -120,7 +229,7 @@ tokens/s = eval_count * 1_000_000_000 / eval_duration
 
 重新启动后测试。不要为省事而对不可信来源全面开放。
 
-## 7. API 调用
+## 8. API 调用
 
 常见接口：
 
@@ -150,7 +259,7 @@ r.raise_for_status()
 print(r.json()["message"]["content"])
 ```
 
-## 8. 常见问题
+## 9. 常见问题
 
 | 现象 | 排查重点 |
 | --- | --- |
@@ -161,7 +270,7 @@ print(r.json()["message"]["content"])
 | 复制后模型重复 | 对照 `ollama list`、`ollama show`，先备份再清理标签 |
 | Agent 工具调用失败 | 模型是否支持工具调用、JSON Schema、超时和重试逻辑 |
 
-## 9. 与 Local Coding Agent 集成
+## 10. 与 Local Coding Agent 集成
 
 ```text
 用户 → Local Coding Agent → Ollama HTTP API → 本地模型 → NVIDIA GPU
@@ -172,11 +281,11 @@ print(r.json()["message"]["content"])
 
 建议 Agent 层实现工具参数校验、循环检测、失败重试上限、任务状态保存、超时管理和自动化验收。模型的工具调用能力需真实测试，不能仅依据参数规模判断。
 
-## 10. 多机部署建议
+## 11. 多机部署建议
 
 多台 Windows + Tesla V100 主机各自运行 Ollama，由上层模型路由服务进行可用性检测、任务分配、超时处理和故障切换。**多台 Ollama 服务的负载均衡不等于跨机器分布式推理。**
 
-## 11. 待补充专题
+## 12. 待补充专题
 
 - Windows 离线安装与模型迁移
 - Ollama 代理配置
@@ -185,8 +294,9 @@ print(r.json()["message"]["content"])
 - 多 GPU 与多节点模型路由
 - Local Coding Agent 模型兼容性测试
 
-## 12. 更新记录
+## 13. 更新记录
 
 | 日期 | 版本 | 内容 |
 | --- | --- | --- |
 | 2026-11-10 | v1.0 | 初始知识库主指南 |
+| 2026-11-11 | v1.1 | 新增模型按需加载、局域网调用、驻留时间设置、GPU 功耗与实测方法；按使用流程调整章节 |
