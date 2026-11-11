@@ -16,5 +16,6 @@
 
 - [AI与大模型 / Ollama 安装部署与使用指南](01-技术知识/AI与大模型/Ollama/Ollama-安装部署与使用指南.md)
 - [仿真与CAE / CST / CST Studio Suite 入门](01-技术知识/仿真与CAE/CST/CST-Studio-Suite.md)
+- [CAD与三维设计 / Creo / Creo Parametric 入门](01-技术知识/CAD与三维设计/Creo/Creo-Parametric.md)
 
 > AI 领域统一使用「AI与大模型」分类；其他主题随新增文档持续更新索引。
