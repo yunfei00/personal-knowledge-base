@@ -18,4 +18,6 @@
 - [仿真与CAE / CST / CST Studio Suite 入门](01-技术知识/仿真与CAE/CST/CST-Studio-Suite.md)
 - [CAD与三维设计 / Creo / Creo Parametric 入门](01-技术知识/CAD与三维设计/Creo/Creo-Parametric.md)
 
+- [Office办公自动化 / Excel / Excel 文件格式与 VBA 宏速查](01-技术知识/Office办公自动化/Excel/Excel文件格式与VBA宏.md)
+
 > AI 领域统一使用「AI与大模型」分类；其他主题随新增文档持续更新索引。
