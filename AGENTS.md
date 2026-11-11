@@ -29,3 +29,14 @@
 - 更新知识后同步 INDEX.md；若 CLI 未安装，可手工维护或注明待生成。
 - 使用可用的校验工具检查链接、文档 ID 和元数据；未运行的测试不得声称通过。
 - 不为通过校验而删除失败用例、降低检查标准或虚构结果。
+
+## Markdown 文档统一规范（2026-11-11）
+
+- 正式知识文档（`01-技术知识/` 至 `07-想法与学习/`）必须以 YAML frontmatter 开头；`README.md`、`INDEX.md`、`AGENTS.md` 和 `templates/` 采用各自用途的格式，不强制套用知识文章模板。
+- frontmatter 字段按顺序为：`id`、`title`、`category`、`tags`、`status`、`created`、`updated`、`platform`、`source_project`、`source_url`、`sensitivity`。日期使用引号包裹的 `YYYY-MM-DD`；未知可选字段使用空字符串，不编造。
+- `id` 全仓唯一且创建后保持稳定；`title` 必须与正文唯一一级标题一致；`category` 使用模板枚举值（technical、troubleshooting、code-snippet、project、procedure、ai-skill、learning），中文业务分类通过目录体现，不混用。
+- `status` 采用 `draft`（草稿）、`maintained`（持续维护）、`verified`（真实验证）或 `archived`（归档）；不得因编辑排版就把未验证内容升级为 verified。
+- 正文使用一个 `#` 一级标题，`##` 为主章节，`###` 为子章节；同一文章内主章节编号风格保持一致。短篇速查可精简章节，不要求强行填充“原理”等无意义内容。
+- 技术概念、使用说明放 `01-技术知识/`；实际故障的复现、修复和验证放 `02-问题解决/`；同一知识只保留一份主文档，其他位置使用相对链接。
+- 修改知识文章时保留既有 ID、创建日期、已验证事实和技术内容；仅实际修改时更新 `updated`。同步维护 `INDEX.md`，检查相对链接与重复 ID。
+- 创建文档优先复制 `templates/` 对应模板，填充真实元数据；禁止保留模板的空 ID 或占位标题后直接提交。
