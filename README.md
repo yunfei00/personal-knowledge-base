@@ -2,6 +2,12 @@
 
 个人知识库，使用 Markdown + Git 长期积累可复用的技术知识、故障解决方案、代码片段、项目档案、标准流程、AI Skills 和学习记录。
 
+## 快速导航
+
+- 📅 [最近更新 · 按修改日期从近到远复习](RECENT.md)（可直接点击文章）
+- 📚 [知识分类索引](INDEX.md)（按主题查找）
+- 🕘 [GitHub 提交历史](https://github.com/yunfei00/personal-knowledge-base/commits/main/)（查看每次真实提交）
+
 ## 分类
 
 - `00-inbox/`：临时收集，每周整理，不强制删除未处理内容
