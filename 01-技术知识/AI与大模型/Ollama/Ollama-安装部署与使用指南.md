@@ -1,10 +1,15 @@
 ---
+id: tech-ai-ollama-001
 title: Ollama 安装部署与使用指南
-category: 技术知识/AI与大模型
+category: technical
 tags: [Ollama, LLM, Windows, Linux, GPU, API]
-created: 2026-11-10
-updated: 2026-11-10
 status: maintained
+created: "2026-11-10"
+updated: "2026-11-11"
+platform: "Windows 10/11 / Ubuntu / NVIDIA GPU"
+source_project: ""
+source_url: "https://docs.ollama.com"
+sensitivity: public
 ---
 
 # Ollama 安装部署与使用指南
