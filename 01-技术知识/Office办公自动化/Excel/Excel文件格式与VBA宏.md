@@ -1,10 +1,24 @@
+---
+id: tech-office-excel-vba-format-001
+title: Excel 文件格式与 VBA 宏速查
+category: technical
+tags: [Excel, VBA, 宏, xlsm, xlsx, xlsb, Office办公自动化]
+status: maintained
+created: "2026-11-11"
+updated: "2026-11-11"
+platform: "Microsoft Excel / Windows"
+source_project: ""
+source_url: ""
+sensitivity: public
+---
+
 # Excel 文件格式与 VBA 宏速查
 
-## 问题背景
+## 1. 问题背景
 
 以前在 Excel 文件中添加过 VBA 代码，过了一段时间忘记保存后的文件扩展名，导致在电脑中找不到文件。最终已找到原文件。本篇记录格式区别和快速检索方法，避免重复查找。
 
-## 核心结论
+## 2. 核心结论
 
 **含 VBA 宏的普通 Excel 工作簿，优先保存为 `.xlsm`（Excel 启用宏的工作簿）。**
 
@@ -16,7 +30,7 @@
 | `.xls` | Excel 97–2003 工作簿 | 是，旧格式 |
 | `.xlam` | Excel 加载项 | 是，适用于加载项 |
 
-## 如何保存
+## 3. 如何保存
 
 1. 在 Excel 中按 `Alt + F11` 打开 VBA 编辑器，编写或查看代码。
 2. 返回 Excel，选择「文件 → 另存为」。
@@ -25,7 +39,7 @@
 
 注意：如果保存为 `.xlsx`，Excel 会提示无法在无宏工作簿中保留 VBA 项目；选择继续使用该格式会丢失宏代码。
 
-## Windows 下快速查找
+## 4. Windows 下快速查找
 
 在文件资源管理器中进入可能存放文件的文件夹（或「此电脑」），右上角搜索框依次输入：
 
@@ -36,12 +50,12 @@
 
 也可以按「修改日期」排序，结合文件名关键词缩小范围。建议在资源管理器中开启「查看 → 文件扩展名」，避免只看到文件名而看不到后缀。
 
-## 经验总结
+## 5. 经验总结
 
 - 找不到过去编写 VBA 的 Excel 文件时，先搜 `*.xlsm`，再排查其他支持宏的格式。
 - 日常 Excel VBA 开发默认使用 `.xlsm`；只有明确需要二进制工作簿或加载项时才选择其他格式。
 - 不要因为文件里有宏就直接启用：来源不明的文件应先确认可信性。
 
-## 检索关键词
+## 6. 检索关键词
 
 Excel、VBA、宏、xlsm、xlsx、xlsb、文件后缀、找不到文件、启用宏的工作簿
