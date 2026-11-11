@@ -176,3 +176,21 @@ Component（组织多个实体）
 ## 参考资料
 
 - [SIMULIA CST Studio Suite 产品介绍](https://www.3ds.com/products/simulia/cst-studio-suite)
+
+## 11. CST Python 接口包的离线安装（待本机验证）
+
+用于理解如下命令（`path` 需要替换为实际安装包目录）：
+
+```powershell
+python -m pip install --no-index --find-links "path" cst-studio-suite-link
+python -m pip show cst-studio-suite-link
+```
+
+- `--no-index`：不访问 Python 包索引。
+- `--find-links`：在指定目录查找可用的包及其依赖。
+- `cst-studio-suite-link`：待安装的 Python 分发包名。
+- 先确认 CST 2025 安装目录中确实提供兼容的包文件；不同版本、安装方式的目录可能不同，不应直接套用未经核实的路径。
+- `pip show` 只能确认包的安装信息，**不能证明 CST 自动化接口可用**。后续还应使用同一个 Python 环境执行实际的 CST 导入、连接、工程保存及回读测试。
+- 本节只记录命令含义和建议验证步骤，**尚未在当前 CST 2025 环境验证安装成功**。
+
+通用参数解释：[pip 安装命令与离线安装速查](../../Python/pip-安装与离线安装.md)。
