@@ -1,6 +1,8 @@
 # 知识索引
 
-> 当前为初始化索引。后续由独立 `personal-kb-cli` 工具自动生成。
+> 当前由人工维护；后续可由独立 `personal-kb-cli` 自动生成。
+
+## 分类
 
 | 分类 | 说明 |
 | --- | --- |
@@ -12,12 +14,23 @@
 | [AI Skills](06-AI-Skills/) | Agents、Skills、Prompts、Workflows |
 | [想法与学习](07-想法与学习/) | 学习与实验 |
 
-## 已收录技术文档
+## 技术知识
 
-- [AI与大模型 / Ollama 安装部署与使用指南](01-技术知识/AI与大模型/Ollama/Ollama-安装部署与使用指南.md)
-- [仿真与CAE / CST / CST Studio Suite 入门](01-技术知识/仿真与CAE/CST/CST-Studio-Suite.md)
+- [AI与大模型 / Ollama / Ollama 安装部署与使用指南](01-技术知识/AI与大模型/Ollama/Ollama-安装部署与使用指南.md)
 - [CAD与三维设计 / Creo / Creo Parametric 入门](01-技术知识/CAD与三维设计/Creo/Creo-Parametric.md)
-
 - [Office办公自动化 / Excel / Excel 文件格式与 VBA 宏速查](01-技术知识/Office办公自动化/Excel/Excel文件格式与VBA宏.md)
+- [Web与前端 / npm 是什么](01-技术知识/Web与前端/npm.md)
+- [仿真与CAE / CST / CST Studio Suite 入门](01-技术知识/仿真与CAE/CST/CST-Studio-Suite.md)
+- [桌面应用 / Electron 是什么](01-技术知识/桌面应用/Electron.md)
 
-> AI 领域统一使用「AI与大模型」分类；其他主题随新增文档持续更新索引。
+## 问题解决
+
+- [Electron 安装 npm ETIMEDOUT](02-问题解决/Electron安装npm-ETIMEDOUT.md)
+
+## 编写规范
+
+- [AI Agent 协作与 Markdown 规范](AGENTS.md)
+- [技术知识模板](templates/technical.md)
+- [故障解决模板](templates/troubleshooting.md)
+
+> AI 技术统一归档到「AI与大模型」；所有新文章应同步更新本索引。
