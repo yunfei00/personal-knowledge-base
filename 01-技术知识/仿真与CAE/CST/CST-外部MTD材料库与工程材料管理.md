@@ -2,7 +2,7 @@
 id: tech-cst-mtd-material-library-001
 title: CST 2025 外部 MTD 材料库：配置、加载、赋值与工程移交
 category: technical
-tags: [CST, CST Studio Suite, MTD, 材料库, Manage Libraries, Material, Solid, VBA, 工程移交]
+tags: [CST, CST Studio Suite, MTD, 材料库, Manage Libraries, Material, Solid, VBA, Boolean, Material.Exists, 工程移交]
 status: draft
 created: "2026-11-12"
 updated: "2026-11-12"
@@ -176,7 +176,33 @@ Python 接口用于连接项目、操作模型历史和保存工程；涉及三�
 | `Material.Create` | 按已设置的物性参数创建材料 | 不代表读取外部 MTD 文件 |
 | `Solid.ChangeMaterial` | 将**工程中已存在**的材料赋予 Solid | 材料必须先存在 |
 
-**当前自动化项目的边界：** `cst-material-automation` 的 P1/P2 采用“已有 CST 工程 → 读取结构和材料 → 修改副本 → 保存和回读”；不把外部 MTD 批量导入算作已实现功能。GitHub 单元测试通过不等于 CST 2025 SP1 实机通过。
+### 6.1 为什么 Material.Exists 文档写 True，实际返回 -1？（实机验证）
+
+**环境：** CST Studio Suite 2025 SP1，Windows；P1 读取工程已通过，P2 对工程副本赋材、保存、重新打开核对也已通过（2026-11-12）。
+
+- **官方文档语义：** `Material.Exists("材料名称")` 判断工程内材料是否存在；存在表示 True，不存在表示 False。这描述的是**逻辑结果**。
+- **真实错误：** P2 执行存在性检查时，自动化输出文件记录为 `-1`，旧解析器只允许字符串 `"true"` / `"false"`，报错 `材料存在性查询结果异常：'-1'`，导致赋材流程提前终止。
+- **原因区分：** 标准 VBA 中，Boolean 真值的数值表示通常是 `-1`，假为 `0`；但标准 `CStr(True)` 的结果是 `"True"`，不能简单说“CStr 会把所有 True 变成 -1”。**此次具体为何输出 `-1` 尚未单独验证返回类型和转换路径**，可能涉及 CST 接口的实际返回值类型。
+- **实际修复：** P2 解析结果时，将 `"True"` / `"-1"` / `"1"` 视为存在，`"False"` / `"0"` 视为不存在；其他值继续报告异常，不做“所有非零值都是真”的宽松转换。
+- **验证结果：** 修复后真实 CST 工程 P2 已通过，并完成保存副本与重新打开材料回读。该结论不代表所有 CST 版本都一定返回 `-1`。
+
+示意代码（Python 解析 CST VBA 写出的单个结果）：
+
+```python
+value = raw_result.strip().lower()
+if value in {"true", "-1", "1"}:
+    exists = True
+elif value in {"false", "0"}:
+    exists = False
+else:
+    raise RuntimeError(f"未知的 Material.Exists 返回值：{value!r}")
+```
+
+**推荐的接口使用原则：** 不要将官方文档里的“返回 True”误当作“写到文件后文本一定是字符串 True”。若以后重新设计 VBA 输出，可考虑先用 `If Material.Exists(...) Then ... Else ...` 显式规范成 `"True"`/`"False"`，但需在实机验证后再改变已经通过的实现。
+
+本问题的修复记录已保存在 [CST P1/P2 验证说明](https://github.com/yunfei00/cst-material-automation/blob/feat/cst-p0-probe/docs/p1-p2-verification.md)，不要在公共仓库提交含实际工程名称、材料参数或公司路径的诊断日志。
+
+**当前自动化项目的边界：** `cst-material-automation` 的 P1/P2 采用“已有 CST 工程 → 读取结构和材料 → 修改副本 → 保存和回读”；不把外部 MTD 批量导入算作已实现功能。目前 P1/P2 已有真实 CST 2025 SP1 工程验收通过记录；GitHub CI 负责无 CST 环境下的回归测试，不能取代后续其他工程和材料类型的实机验证。
 
 代码与业务验收说明：[cst-material-automation / P1-P2 验证文档](https://github.com/yunfei00/cst-material-automation/blob/feat/cst-p0-probe/docs/p1-p2-verification.md)。
 
@@ -193,6 +219,7 @@ Python 接口用于连接项目、操作模型历史和保存工程；涉及三�
 | 材料库修改后，旧工程材料参数自动改变吗？ | 不能假定；CST 提供从库中主动更新工程材料属性的操作 |
 | Solid 在哪里？ | 左侧 Navigation Tree → Components → 对应 Component 下 |
 | 如何安全批量赋材？ | 先检查工程内存在目标 Solid 和材料，再在副本上修改、保存、重新打开核对 |
+| `Material.Exists` 文档返回 True，程序读到 `-1`？ | CST 2025 SP1 实测该检查可能输出 `-1`；按布尔真值兼容处理，详见 [6.1](#61-为什么-materialexists-文档写-true实际返回--1实机验证) |
 
 ## 8. 来源、验证情况和后续
 
@@ -207,7 +234,7 @@ Python 接口用于连接项目、操作模型历史和保存工程；涉及三�
 - `mergedProjects/VBA_3D/special_vbalayer/special_vbalayerolayer_object.htm`：Material 创建、枚举与存在性。
 - `userinterface/elements/backstage.htm`：Pack Project 功能说明。
 
-**已确认：** 外部 MTD 库配置后能显示、左侧 Components 能找到 Solid；官方手册证实 Load、Assign、Update 以及上述接口语义。
+**已确认：** 外部 MTD 库配置后能显示、左侧 Components 能找到 Solid；官方手册证实 Load、Assign、Update 以及上述接口语义；2026-11-12 P1/P2 已在真实 CST 2025 SP1 工程上通过。`Material.Exists` 的 `-1` 兼容处理亦已通过真实 P2 测试。
 
 **仍需实测：** 跨电脑无外部库情况下的完整材料参数/仿真复现；特定 MTD 格式的外部依赖；是否存在适用于该库的真正“一次批量 Load 所有 MTD”接口。
 
