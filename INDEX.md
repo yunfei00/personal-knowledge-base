@@ -33,6 +33,7 @@
 ## 问题解决
 
 - [Electron 安装 npm ETIMEDOUT](02-问题解决/Electron安装npm-ETIMEDOUT.md)
+- [PyCharm src 项目导入无法跳转与波浪线：设置 Sources Root 并重新加载解释器](02-问题解决/PyCharm-src项目导入无法跳转与波浪线.md)
 
 ## 编写规范
 
