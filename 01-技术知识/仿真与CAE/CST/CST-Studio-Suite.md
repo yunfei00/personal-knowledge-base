@@ -156,11 +156,13 @@ Component（组织多个实体）
 
 ## 11. CST Python 和 VBA 怎样配合？
 
-- Python：`cst.interface.DesignEnvironment()`、`env.open_project(...)`、`project.model3d.get_tree_items()`，用于打开项目、读取工程树。
+- Python：`cst.interface.DesignEnvironment()`、`env.open_project(...)` 用于打开工程。**实机已发现 `model3d.get_tree_items()` 对某些中文工程树内容报 UTF-8 解码错误（`0xB2`），现有 P1/P2 使用 VBA 枚举 Solid/Material 绕开此接口。**
 - VBA Solid：`Solid.GetNumberOfShapes`、`Solid.GetNameOfShapeFromIndex`、`Solid.GetMaterialNameForShape`、`Solid.ChangeMaterial`，用于准确识别和赋材。
 - VBA Material：`Material.GetNumberOfMaterials`、`Material.GetNameOfMaterialFromIndex`、`Material.Exists`、`Material.Create`，用于工程内部材料的检查与创建。
 
-这些接口名称已在 CST 2025 官方离线帮助中确认；但具体自动化工具是否完整运行通过，须以真实 CST 工程的 Windows 实机测试为准，不能以 GitHub CI 的模拟测试代替。
+这些接口名称已在 CST 2025 官方离线帮助中确认；**P1（读取现有工程）和 P2（给工程副本指定材料、保存并回读）已在真实 CST 2025 SP1 工程上验证通过（2026-11-12）**。
+
+遇到 `Material.Exists` 官方文档返回 `True`，但实际查询得到 `-1` 的情况，参见 [外部 MTD 材料库与工程材料管理：6.1 材料存在性返回值](CST-外部MTD材料库与工程材料管理.md)。
 
 当前代码与验证文档：[cst-material-automation P1/P2](https://github.com/yunfei00/cst-material-automation/blob/feat/cst-p0-probe/docs/p1-p2-verification.md)。
 
