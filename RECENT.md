@@ -2,7 +2,7 @@
 
 > 本页由 GitHub Actions 根据知识文章 YAML 的 `updated` 字段自动生成，请勿手动编辑。日期精度为天；同日按标题排序。此处不是 Git 提交时间。
 
-**当前收录：12 篇知识文章。**
+**当前收录：13 篇知识文章。**
 
 - [返回知识库首页](README.md)
 - [按主题分类查找](INDEX.md)
@@ -14,6 +14,7 @@
 | --- | --- | --- | --- | --- |
 | 2026-11-12 | [CST 2025 外部 MTD 材料库：配置、加载、赋值与工程移交](01-技术知识/仿真与CAE/CST/CST-外部MTD材料库与工程材料管理.md) | 仿真与CAE | 2026-11-12 | draft |
 | 2026-11-12 | [CST Studio Suite 入门：Solid、Component 与 Material](01-技术知识/仿真与CAE/CST/CST-Studio-Suite.md) | 仿真与CAE | 2026-11-11 | draft |
+| 2026-11-12 | [PowerShell $input 自动变量冲突：文件路径参数传递失败](02-问题解决/PowerShell-input自动变量冲突.md) | 问题解决 | 2026-11-12 | verified |
 | 2026-11-12 | [PyCharm 克隆 src 布局项目后导入无法跳转：设置 Sources Root 并重新加载解释器](02-问题解决/PyCharm-src项目导入无法跳转与波浪线.md) | 问题解决 | 2026-11-12 | verified |
 | 2026-11-11 | [Creo Parametric 入门：三维 CAD、零件、装配与特征](01-技术知识/CAD与三维设计/Creo/Creo-Parametric.md) | CAD与三维设计 | 2026-11-11 | draft |
 | 2026-11-11 | [Excel 文件格式与 VBA 宏速查](01-技术知识/Office办公自动化/Excel/Excel文件格式与VBA宏.md) | Office办公自动化 | 2026-11-11 | maintained |
