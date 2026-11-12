@@ -2,10 +2,10 @@
 id: tech-cst-intro-001
 title: CST Studio Suite 入门：Solid、Component 与 Material
 category: technical
-tags: [CST, CST Studio Suite, Solid, Component, Material, SAT, 三维建模, 电磁仿真]
+tags: [CST, CST Studio Suite, Solid, Component, Material, MTD, 材料库, SAT, 三维建模, 电磁仿真]
 status: draft
 created: "2026-11-11"
-updated: "2026-11-11"
+updated: "2026-11-12"
 platform: "CST Studio Suite 2025 / Windows"
 source_project: ""
 source_url: "https://www.3ds.com/products/simulia/cst-studio-suite"
@@ -135,18 +135,36 @@ Component（组织多个实体）
 | Solver（求解器） | 计算电磁问题的数值方法或模块 |
 | Boundary Condition（边界条件） | 规定计算区域边界的物理处理方式 |
 
-## 9. 后续待补充主题
+## 9. 在 CST 2025 的哪里查看 Solid 列表？
 
-- 如何在 CST 2025 模型树中查看 Solid、Component、Material。
-- 如何检查 Solid 的尺寸、体积、包围盒及相对位置。
-- SAT 导入后的几何修复与检查。
-- 如何新建材料、复用材料库、给 Solid 赋材料。
-- CST 工程的保存、重新打开和自动化接口。
-- 仿真求解器、网格、端口与边界条件的基础概念。
+打开 CST 左侧 **Navigation Tree（导航树）→ Components**，逐层展开 Component，即可看到下属的三维 Solid；它们通常按组件分组，而不是在顶层提供一个单独的 `Solids` 列表。
 
-遇到实际问题后，再把**现象、原因、验证方法和结论**补进对应章节；较长的故障处理过程另存到 `02-问题解决/`，并在本文建立链接。
+- 单击一个 Solid，可以定位对应的三维几何体。
+- 选中 Solid，通过 **Modeling → Materials → New/Edit → Assign Material and Color** 查看、修改当前材料。
+- 左侧 **Materials** 节点列出**当前工程内**已经定义/加载的材料；它和外部 Material Library 对话框不是同一个概念。
+- Component 不等于 Solid；不能将导航树下所有文件夹或叶子项不加判断地视为实体。
 
-## 10. 软件安装与维护：CST 2025 SUP 补丁安装（已验证）
+## 10. 自定义 MTD 材料库：容易混淆的三个操作
+
+1. **注册外部材料库**：通过 **File → Manage Libraries → Library paths** 添加本地库目录，使外部 `.mtd` 材料在库中可见；已实际配置成功。
+2. **Load 到当前工程**：通过 **Modeling → Materials → Material Library → Load from Material Library** 选择材料并加载到当前工程的 `Materials`。不需要指定任何 Solid。
+3. **给 Solid 指定材料**：通过 **Assign Material and Color** 或 VBA `Solid.ChangeMaterial`，把工程内已存在的材料关联到目标 Solid。
+
+**特别注意：** 在外部库中看到 100 个 MTD，不代表该工程的 `Materials` 已包含这 100 个材料；而工程内部已经 Load 并保存的材料通常可以随工程被其他电脑读取，但涉及特殊外部数据、更新材料参数和仿真复现时仍要单独检查。
+
+完整说明（含外部库目录组织、批量加载与批量赋值的区别、跨电脑移交、材料更新和验证步骤）：**[CST 2025 外部 MTD 材料库：配置、加载、赋值与工程移交](CST-外部MTD材料库与工程材料管理.md)**。
+
+## 11. CST Python 和 VBA 怎样配合？
+
+- Python：`cst.interface.DesignEnvironment()`、`env.open_project(...)`、`project.model3d.get_tree_items()`，用于打开项目、读取工程树。
+- VBA Solid：`Solid.GetNumberOfShapes`、`Solid.GetNameOfShapeFromIndex`、`Solid.GetMaterialNameForShape`、`Solid.ChangeMaterial`，用于准确识别和赋材。
+- VBA Material：`Material.GetNumberOfMaterials`、`Material.GetNameOfMaterialFromIndex`、`Material.Exists`、`Material.Create`，用于工程内部材料的检查与创建。
+
+这些接口名称已在 CST 2025 官方离线帮助中确认；但具体自动化工具是否完整运行通过，须以真实 CST 工程的 Windows 实机测试为准，不能以 GitHub CI 的模拟测试代替。
+
+当前代码与验证文档：[cst-material-automation P1/P2](https://github.com/yunfei00/cst-material-automation/blob/feat/cst-p0-probe/docs/p1-p2-verification.md)。
+
+## 12. 软件安装与维护：CST 2025 SUP 补丁安装（已验证）
 
 **记录日期：** 2026-11-11  
 **环境：** CST Studio Suite 2025 / Windows  
@@ -173,11 +191,7 @@ Component（组织多个实体）
 
 **检索关键词：** CST、2025、SUP、Service Pack、补丁、Update Manager。
 
-## 参考资料
-
-- [SIMULIA CST Studio Suite 产品介绍](https://www.3ds.com/products/simulia/cst-studio-suite)
-
-## 11. CST Python 接口包的离线安装（待本机验证）
+## 13. CST Python 接口包的离线安装（待本机验证）
 
 用于理解如下命令（`path` 需要替换为实际安装包目录）：
 
@@ -194,3 +208,16 @@ python -m pip show cst-studio-suite-link
 - 本节只记录命令含义和建议验证步骤，**尚未在当前 CST 2025 环境验证安装成功**。
 
 通用参数解释：[pip 安装命令与离线安装速查](../../Python/pip-安装与离线安装.md)。
+
+## 14. 后续待补充主题
+
+- 如何查看 Solid 的尺寸、体积、包围盒及相对位置。
+- 特殊几何、材料属性和仿真求解设置的排错。
+- SAT 导入后的几何修复与检查（仅作为 CST 通用知识，当前自动化项目不需要导入 SAT）。
+- 工程在另一台无外部 MTD 库的电脑上打开、回读关键材料参数、仿真复现的真实验收记录。
+
+## 参考资料
+
+- [SIMULIA CST Studio Suite 产品介绍](https://www.3ds.com/products/simulia/cst-studio-suite)
+- CST Studio Suite 2025 离线帮助：`mergedProjects/3D/common_general/`、`mergedProjects/VBA_3D/`、`userinterface/elements/backstage.htm`（帮助文档仅供本机核对，不复制厂商帮助到公开仓库）
+- [CST 2025 外部 MTD 材料库与工程材料管理](CST-外部MTD材料库与工程材料管理.md)
