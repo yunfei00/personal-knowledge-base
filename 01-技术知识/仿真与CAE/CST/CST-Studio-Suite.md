@@ -2,7 +2,7 @@
 id: tech-cst-intro-001
 title: CST Studio Suite 入门：Solid、Component 与 Material
 category: technical
-tags: [CST, CST Studio Suite, Solid, Component, Material, MTD, 材料库, SAT, 三维建模, 电磁仿真]
+tags: [CST, CST Studio Suite, Solid, Component, Material, MTD, 材料库, SAT, 三维建模, 电磁仿真, Bounding Box, AABB, 包围盒, 非紧包围盒]
 status: draft
 created: "2026-11-11"
 updated: "2026-11-12"
@@ -120,6 +120,73 @@ Component（组织多个实体）
 
 对于长期可复用的自动化工具，不应把文件名、Solid 名称或 Component 名称作为唯一识别依据。
 
+### 7.1 包围盒（Bounding Box）是什么？
+
+> **一句话记忆：** 用一个长方体把三维 Solid 包起来，就可以快速知道它的大致空间范围、轴向尺寸和位置；但这不是零件真实轮廓。
+
+在 CST、CAD 和三维几何分析中，常用的是 **AABB（Axis-Aligned Bounding Box，轴对齐包围盒）**：长方体的边平行于全局 X/Y/Z 坐标轴。即使零件是倾斜、不规则或中空的，它仍然能被一个 AABB 包含。
+
+包围盒通过六个坐标描述：
+
+| 坐标 | 意义 |
+| --- | --- |
+| *xmin* / *xmax* | X 方向的下界 / 上界 |
+| *ymin* / *ymax* | Y 方向的下界 / 上界 |
+| *zmin* / *zmax* | Z 方向的下界 / 上界 |
+
+包围盒的三个轴向范围：
+
+- X 方向范围：`xmax - xmin`
+- Y 方向范围：`ymax - ymin`
+- Z 方向范围：`zmax - zmin`
+
+包围盒中点为 `((xmin+xmax)/2, (ymin+ymax)/2, (zmin+zmax)/2)`；**它不是实体的几何质心，更不是质量中心**。
+
+### 7.2 紧包围盒（Tight）和非紧包围盒（Loose）
+
+| 类型 | 含义 | 注意 |
+| --- | --- | --- |
+| **紧包围盒（Tight AABB）** | 在固定坐标轴方向上尽可能贴合实体外缘的包围盒 | 不是可以任意旋转方向的“最小体积包围盒” |
+| **非紧包围盒（Loose AABB）** | 依然包含整个实体，但可以保留额外空隙，不保证贴合最外缘 | 适合快速空间筛选；范围不能直接认定为零件精确尺寸 |
+
+**示例（非实际工程）：** 某 Solid 的精确 X 方向范围为 `0～20 mm`，紧 AABB 的 X 范围也是 `0～20 mm`；假如某算法输出较宽松的 `-2～23 mm`，非紧 AABB 的 X 方向范围就变成 `25 mm`。**这里的额外空隙纯属举例，不代表 CST 固定扩大量。**
+
+即使是紧 AABB，若物体倾斜摆放，AABB 三轴范围也不一定是零件本体的真实长、宽和厚度。非紧 AABB 的轴向范围更不能直接当作精确厚度。
+
+### 7.3 包围盒用于什么分析？
+
+1. **快速位置筛选：** 判断不同 Solid 大致处于工程中的哪个区域。
+2. **空间范围描述：** 用 `xmin/xmax` 等坐标计算大致尺寸和包围盒中心。
+3. **邻近候选过滤：** 优先挑出包围盒靠近、相交或包含的实体，减少后续精确几何计算量。
+4. **辅助材料识别：** 与体积、表面积、材料知识和人工规则结合，筛选扁平状、细长状、块状结构的候选。
+
+**不能由包围盒直接断言：**
+
+- 包围盒尺寸 ≠ 零件精确尺寸；最小轴向范围 ≠ 已测量的真实厚度。
+- 包围盒中心 ≠ 实体质心。
+- 两个包围盒相交 ≠ 两个实体实际接触或相交。
+- 包围盒之间的距离是**真实实体之间最短距离的下界**；当包围盒距离为 0 时，实体实际仍可能相距一段距离。
+- “形状扁平”不等于一定是 PCB 或金属片，不能据此自动判定材料。
+
+### 7.4 在 CST 2025 自动化中的实际用法与限制
+
+CST 2025 官方 VBA 帮助提供 **`Solid.GetLooseBoundingBoxOfShape`**，用于读取 Solid 的**非紧**全局包围盒。离线帮助同时指出该方法**不能在 History 重建或结构宏执行期间调用**。
+
+因此，我们的工具不能直接把它塞入已验证的 Python `model3d.add_to_history()` 流程中：
+
+| 阶段 | 目前能力 | 验证状态（2026-11-12） |
+| --- | --- | --- |
+| **P3-A**：`geometry` | 使用官方 VBA 读取体积、表面积、长度单位、紧致度 | **用户已确认实机通过** |
+| **P3-C**：`spatial` | 尝试通过 CST OLE `Project.RunScript()` 执行非 History 命令宏，读取非紧包围盒、轴向范围、包围盒中点与邻近候选 | **代码与模拟 CI 已完成，真实 CST 实机尚待验证** |
+
+P3-C 仅操作**临时工程副本**，不导入材料、不修改原工程。是否能够在 CST 2025 SP1 的实际 COM/命令宏上下文中运行，必须以实机结果为准；若失败，应诊断调用入口，不能改回受限 History 方式。
+
+官方离线帮助位置：`mergedProjects/VBA_3D/common_vbasolido/common_vbasolido_solid_object.htm`。
+
+项目详细说明：[P3-C 非 History 空间特征验证文档](https://github.com/yunfei00/cst-material-automation/blob/feat/cst-p3-spatial-probe/docs/p3-spatial-probe-verification.md)。
+
+**记忆口诀：** *“包围盒用来快速圈范围，不等于真实轮廓；非紧包围盒更宽松，适合筛选、不适合直接定材。”*
+
 ## 8. 常见术语速查
 
 | 术语 | 简单解释 |
@@ -127,6 +194,8 @@ Component（组织多个实体）
 | Project（工程） | 保存模型、设置及相关仿真内容的工作单元 |
 | Model Tree（模型树） | 管理几何、材料等对象的树状界面 |
 | Solid（实体） | 三维几何对象 |
+| Bounding Box / AABB（包围盒） | 与坐标轴平行、包含 Solid 的长方体范围 |
+| Tight / Loose Bounding Box | 紧包围盒贴合轴向最外缘；非紧包围盒允许额外空间 |
 | Component（组件） | Solid 的组织分组 |
 | Material（材料） | 电磁或其他仿真所需的物理属性定义 |
 | SAT / ACIS | 几何数据格式及相关几何建模技术 |
@@ -213,7 +282,7 @@ python -m pip show cst-studio-suite-link
 
 ## 14. 后续待补充主题
 
-- 如何查看 Solid 的尺寸、体积、包围盒及相对位置。
+- 在真实 CST 2025 SP1 中验证 P3-C 非 History 包围盒查询与轴向范围；后续研究精确几何距离、真实厚度和实体接触判定。
 - 特殊几何、材料属性和仿真求解设置的排错。
 - SAT 导入后的几何修复与检查（仅作为 CST 通用知识，当前自动化项目不需要导入 SAT）。
 - 工程在另一台无外部 MTD 库的电脑上打开、回读关键材料参数、仿真复现的真实验收记录。
