@@ -27,6 +27,7 @@
 - [Office办公自动化 / Excel / Excel 文件格式与 VBA 宏速查](01-技术知识/Office办公自动化/Excel/Excel文件格式与VBA宏.md)
 - [Web与前端 / npm 是什么](01-技术知识/Web与前端/npm.md)
 - [仿真与CAE / CST / CST Studio Suite 入门](01-技术知识/仿真与CAE/CST/CST-Studio-Suite.md)
+- [仿真与CAE / CST / 外部 MTD 材料库、Solid 赋值与跨电脑移交](01-技术知识/仿真与CAE/CST/CST-外部MTD材料库与工程材料管理.md)
 - [桌面应用 / Electron 是什么](01-技术知识/桌面应用/Electron.md)
 
 ## 问题解决
