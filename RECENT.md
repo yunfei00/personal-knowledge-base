@@ -13,8 +13,8 @@
 | 最后更新 | 文章（点击打开） | 分类 | 创建日期 | 状态 |
 | --- | --- | --- | --- | --- |
 | 2026-11-12 | [CST 2025 外部 MTD 材料库：配置、加载、赋值与工程移交](01-技术知识/仿真与CAE/CST/CST-外部MTD材料库与工程材料管理.md) | 仿真与CAE | 2026-11-12 | draft |
+| 2026-11-12 | [CST Studio Suite 入门：Solid、Component 与 Material](01-技术知识/仿真与CAE/CST/CST-Studio-Suite.md) | 仿真与CAE | 2026-11-11 | draft |
 | 2026-11-11 | [Creo Parametric 入门：三维 CAD、零件、装配与特征](01-技术知识/CAD与三维设计/Creo/Creo-Parametric.md) | CAD与三维设计 | 2026-11-11 | draft |
-| 2026-11-11 | [CST Studio Suite 入门：Solid、Component 与 Material](01-技术知识/仿真与CAE/CST/CST-Studio-Suite.md) | 仿真与CAE | 2026-11-11 | draft |
 | 2026-11-11 | [Excel 文件格式与 VBA 宏速查](01-技术知识/Office办公自动化/Excel/Excel文件格式与VBA宏.md) | Office办公自动化 | 2026-11-11 | maintained |
 | 2026-11-11 | [Ollama 安装部署与使用指南](01-技术知识/AI与大模型/Ollama/Ollama-安装部署与使用指南.md) | AI与大模型 | 2026-11-10 | maintained |
 | 2026-11-11 | [pip 安装命令与离线安装速查](01-技术知识/Python/pip-安装与离线安装.md) | Python | 2026-11-11 | maintained |
