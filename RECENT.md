@@ -2,7 +2,7 @@
 
 > 本页由 GitHub Actions 根据知识文章 YAML 的 `updated` 字段自动生成，请勿手动编辑。日期精度为天；同日按标题排序。此处不是 Git 提交时间。
 
-**当前收录：13 篇知识文章。**
+**当前收录：14 篇知识文章。**
 
 - [返回知识库首页](README.md)
 - [按主题分类查找](INDEX.md)
@@ -12,6 +12,7 @@
 
 | 最后更新 | 文章（点击打开） | 分类 | 创建日期 | 状态 |
 | --- | --- | --- | --- | --- |
+| 2026-11-16 | [Windows 截屏与截图快捷键速查](01-技术知识/系统与环境/Windows/Windows-截屏与截图快捷键.md) | 系统与环境 | 2026-11-16 | maintained |
 | 2026-11-13 | [uv 入门：Python 环境、依赖管理与 pip 兼容命令](01-技术知识/Python/uv-环境与依赖管理.md) | Python | 2026-11-11 | maintained |
 | 2026-11-12 | [CST 2025 外部 MTD 材料库：配置、加载、赋值与工程移交](01-技术知识/仿真与CAE/CST/CST-外部MTD材料库与工程材料管理.md) | 仿真与CAE | 2026-11-12 | draft |
 | 2026-11-12 | [CST Studio Suite 入门：Solid、Component 与 Material](01-技术知识/仿真与CAE/CST/CST-Studio-Suite.md) | 仿真与CAE | 2026-11-11 | draft |
