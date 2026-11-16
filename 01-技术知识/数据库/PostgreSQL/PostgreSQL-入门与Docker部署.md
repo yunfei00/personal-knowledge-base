@@ -108,14 +108,17 @@ docker compose exec postgres psql -U appuser -d appdb
 - 仅有数据卷不等于已经做了备份。需要定期生成备份文件并测试恢复。
 - 数据库运行时，不建议直接复制活动数据目录作为唯一备份手段。
 
-逻辑备份示例（PowerShell；确保目标目录存在）：
+逻辑备份示例（Windows PowerShell；先在容器内生成二进制备份，再复制到宿主机，避免旧版 PowerShell 重定向损坏二进制文件）：
 
 ```powershell
 New-Item -ItemType Directory -Force -Path .\backups | Out-Null
-docker compose exec -T postgres pg_dump -U appuser -d appdb -Fc > .\backups\appdb.dump
+docker compose exec -T postgres pg_dump -U appuser -d appdb -Fc -f /tmp/appdb.dump
+$containerId = docker compose ps -q postgres
+docker cp "${containerId}:/tmp/appdb.dump" .\backups\appdb.dump
+docker compose exec -T postgres rm -f /tmp/appdb.dump
 ```
 
-**重要：** 在 Windows PowerShell 中，重定向二进制输出的行为与版本有关；上面的重定向写法并不适合所有 PowerShell 版本。实际备份更稳妥的方式是让 `pg_dump` 在容器内写文件，再使用 `docker cp` 导出，或在明确支持二进制重定向的环境中执行。恢复前应确认备份文件有效，并先在测试数据库演练。
+执行时应检查各命令的退出状态；恢复前应确认备份文件有效，并先在测试数据库演练。上面的示例用于理解流程，正式环境应配合备份调度、保留策略和异地存储。
 
 ## 6. 常见问题
 
