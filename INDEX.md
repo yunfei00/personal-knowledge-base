@@ -18,6 +18,8 @@
 
 ## 技术知识
 
+- [开发工具 / Git / Git 常用命令与使用指南](01-技术知识/开发工具/Git/Git常用命令与使用指南.md)
+
 - [数据库 / PostgreSQL 入门、Docker 部署与数据持久化](01-技术知识/数据库/PostgreSQL/PostgreSQL-入门与Docker部署.md)
 - [Python / uv 入门：环境与依赖管理](01-技术知识/Python/uv-环境与依赖管理.md)
 - [Python / pip 安装命令与离线安装速查](01-技术知识/Python/pip-安装与离线安装.md)
