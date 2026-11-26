@@ -14,6 +14,109 @@ sensitivity: public
 
 # Git 常用命令与使用指南
 
+## 高频问题：两个最常用的操作（优先阅读）
+
+### A. 强制使用远程代码覆盖本地代码
+
+适用：git pull 提示本地修改或未跟踪文件将被覆盖，且明确不需要保留本地修改、本地独有提交。
+
+**第一步：确认当前分支和远程地址。**
+
+```bash
+git status -sb
+git remote -v
+```
+
+**第二步：强制同步。** 假设当前分支是 main，远程为 origin。Windows PowerShell 和 Bash 均可逐条执行：
+
+```bash
+git fetch origin
+git reset --hard origin/main
+```
+
+必须确认 fetch 成功才执行 reset。fetch 更新远程跟踪引用；reset --hard 将当前分支、暂存区及已跟踪文件恢复到 origin/main，并删除妨碍目标文件写入的未跟踪文件。它不是合并操作，不需要再 pull。若当前分支为 dev，应改用 origin/dev；不要在 dev 上误执行 origin/main。
+
+**第三步（可选）：删除剩余未跟踪文件。**
+
+```bash
+git clean -nd
+```
+
+确认预览列表中的文件均可删除后，再执行：
+
+```bash
+git clean -fd
+```
+
+这会删除其他未跟踪且未忽略的文件和目录。一般不需要 -x；它还会删除被忽略的配置、虚拟环境等。未提交数据可能无法恢复。需要保留数据时，先另行备份，或使用 git stash push -u；本地独有提交可先创建备份分支 git branch backup-before-reset。
+
+**第四步：检查结果。**
+
+```bash
+git status -sb
+git rev-parse HEAD
+git rev-parse origin/main
+```
+
+两个哈希相同表示当前提交已与刚获取的远程 main 一致。status 用于确认剩余工作区变化。git pull --force 不是强制覆盖工作区的正确命令。
+
+### B. GitHub 新建分支后，本地 git switch 报错
+
+适用：远程已经创建 dev，但本地执行 git switch dev 提示 fatal: invalid reference: dev 或旧版 checkout 提示 pathspec did not match。
+
+原因通常是本地还没有更新远程跟踪引用。Git 不会在每次 switch 时自动访问 GitHub。
+
+**第一步：推荐操作。**
+
+```bash
+git fetch origin
+git branch -r
+git switch dev
+git branch -vv
+```
+
+fetch 成功后，branch -r 应能看到 origin/dev。switch dev 在本地不存在 dev 且远程匹配唯一（或已配置默认远程）时，自动创建本地 dev 并设置上游。branch -vv 验证当前分支及上游。
+
+**第二步：自动切换失败，但 origin/dev 已存在。**
+
+```bash
+git switch -c dev --track origin/dev
+```
+
+-c 创建本地分支，--track 明确关联远程跟踪分支。如果提示本地 dev 已存在，不要重复创建，改为 git switch dev；若未关联上游，再执行 git branch --set-upstream-to=origin/dev dev。
+
+**第三步：fetch 后仍没有 origin/dev。**
+
+```bash
+git remote -v
+git ls-remote --heads origin dev
+git config --get-all remote.origin.fetch
+```
+
+检查远程 URL、分支是否真的存在、是否使用了单分支克隆或受限 fetch 配置。若服务器确认存在 dev，显式获取：
+
+```bash
+git fetch origin refs/heads/dev:refs/remotes/origin/dev
+git switch -c dev --track origin/dev
+```
+
+第一条将服务器 dev 获取到本地 origin/dev；成功后第二条创建并切换本地分支。若长期需要跟踪所有分支且确认允许修改仓库配置，可执行 git remote set-branches origin '*'，再 git fetch origin；这会扩大 origin 的跟踪范围。若只想追加 dev，可用 git remote set-branches --add origin dev，再 fetch。
+
+**第四步：其他报错。**
+
+| 报错或现象 | 处理 |
+| --- | --- |
+| local changes would be overwritten by checkout | 先提交或 git stash push -u，再切换；仅在确认不要本地修改时才丢弃。 |
+| untracked working tree files would be overwritten | 备份或移走冲突文件；不要默认清理全部未跟踪文件。 |
+| branch already exists | git switch dev，不再使用 -c。 |
+| 多个远程存在 dev | 明确使用 git switch -c dev --track origin/dev。 |
+| switch is not a git command | Git 版本低于 2.23 时使用 git checkout -b dev --track origin/dev，或升级 Git。 |
+| ls-remote 无匹配结果 | 核对仓库、分支名称大小写及访问权限；不要凭空创建同名本地分支代替远程分支。 |
+
+切换成功后，如需更新已有本地分支，执行 git pull --ff-only。switch 本身不保证已有本地分支同步至最新远程提交。
+
+下面第 4、5 章保留完整命令说明和其他场景。
+
 ## 1. 基本原理
 
 Git 是分布式版本控制工具，GitHub 是远程代码托管平台。工作区通过 add 进入暂存区，通过 commit 进入本地仓库，通过 push 上传远程。fetch 只获取远程引用，pull 则获取并整合远程变更。
